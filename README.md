@@ -3,7 +3,7 @@ A simple script made thanks to Olympic bot to try to crack vhackos accounts with
 
 ![img](https://i.imgur.com/3p8UyJM.png)
 
-## How to commpile?
+## How to compile?
 This project is made in c#, so you can compile it by using Visual Studio on windows or if don't have it , you can find the executable in Brutino/bin/Debug/Brutino.exe 
 
 ## Warning!
