@@ -1,0 +1,5 @@
+/Users/angelorosa/Desktop/Brutino/Brutino/bin/Debug/Brutino.exe
+/Users/angelorosa/Desktop/Brutino/Brutino/bin/Debug/Brutino.pdb
+/Users/angelorosa/Desktop/Brutino/Brutino/obj/x86/Debug/Brutino.csproj.CoreCompileInputs.cache
+/Users/angelorosa/Desktop/Brutino/Brutino/obj/x86/Debug/Brutino.exe
+/Users/angelorosa/Desktop/Brutino/Brutino/obj/x86/Debug/Brutino.pdb
