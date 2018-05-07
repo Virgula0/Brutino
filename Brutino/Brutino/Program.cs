@@ -90,7 +90,7 @@ namespace Brutino
             Console.ForegroundColor = ConsoleColor.White;
         }
 
-        public static void table_trying(string ip, string testing_user, string line, int count, int tried, double tProgress, int found, int u, int j, string[] rs)
+        public static void table_trying(string ip, string testing_user, string line, int count, int tried, double tProgress, int found, int u, int j, string[] rs, string tim)
         {
             //Write infos while bruteforcing
             Console.Clear();
@@ -122,10 +122,7 @@ namespace Brutino
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Time elapsed\t");
             Console.ForegroundColor = ConsoleColor.Cyan;
-            if ((int)tProgress >= 0 && (int)tProgress <= 60)
-                Console.WriteLine((int)tProgress + " minutes");
-            else
-                Console.WriteLine((int)tProgress + " hours");
+            Console.WriteLine((int)tProgress + " " + tim);
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Progress\t");
             Console.ForegroundColor = ConsoleColor.Blue;
@@ -164,7 +161,7 @@ namespace Brutino
             File.WriteAllText(file, save);
         }
 
-        public static void table_found(string[] rs, double elapsed, int found)
+        public static void table_found(string[] rs, double elapsed, int found , string tim)
         {
             //Well Done! Password found write results
             Console.Clear();
@@ -181,10 +178,7 @@ namespace Brutino
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Elapsed time\t");
             Console.ForegroundColor = ConsoleColor.Magenta;
-            if ((int)elapsed >= 0 && (int)elapsed <= 60)
-                Console.WriteLine((int)elapsed + " minutes");
-            else
-                Console.WriteLine((int)elapsed + " hours");
+            Console.WriteLine((int)elapsed + " " + tim);
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Saved to ");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -195,7 +189,7 @@ namespace Brutino
             System.Environment.Exit(1);
         }
 
-        public static void table_not_found(double elapsed)
+        public static void table_not_found(double elapsed , string tim)
         {
             //Ops, attack failed no results found
             Console.Clear();
@@ -207,7 +201,7 @@ namespace Brutino
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Elapsed time\t");
             Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine((int)elapsed + " minutes");
+            Console.WriteLine((int)elapsed + tim);
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("\n\n Type a key to exit");
             Console.ReadLine();
@@ -228,7 +222,7 @@ namespace Brutino
 
             for (int i = 0; i < size; i++)
             {
-                line[i] = lines[i] + "\n" + lines[i].ToLower() + "\n" + lines[i].ToUpper() + "\n"; //+ lines[i].ToUpper().ElementAt(0)
+                line[i] = lines[i] + "\n" + lines[i].ToLower() + "\n" + lines[i].ToUpper() + "\n" + lines[i].ToUpper().ElementAt(0);
                 count++;
             }
 
@@ -435,13 +429,15 @@ namespace Brutino
                         var usr = File.ReadAllLines(username);
 
                         var time = progress.Elapsed.TotalMinutes;
+                        var tim =  "minutes";
 
                         if (time > 60)
                         {
                             time = progress.Elapsed.TotalHours;
+                            tim = " hours";
                         }
 
-                        table_trying(ip, usr[u], line[j], total, tried, time, found, u, j, result);
+                        table_trying(ip, usr[u], line[j], total, tried, time, found, u, j, result , tim);
 
                         //Calculate MD5 hash of password
                         hash = CalculateMD5Hash(line[j]);
@@ -509,13 +505,15 @@ namespace Brutino
             {
                 watch_for_this.Stop();
                 var elapsed = watch_for_this.Elapsed.TotalMinutes;
+                var tim = "minutes";
 
                 if (elapsed > 60)
                 {
                     elapsed = watch_for_this.Elapsed.TotalHours;
+                    tim = "hours";
                 }
 
-                table_not_found(elapsed);
+                table_not_found(elapsed , tim);
             }
 
             if (u == count_users && found > 0)
@@ -523,13 +521,15 @@ namespace Brutino
 
                 watch_for_this.Stop();
                 var ela = watch_for_this.Elapsed.TotalMinutes;
+                var tim = " minutes";
 
                 if (ela > 60)
                 {
                     ela = watch_for_this.Elapsed.TotalHours;
+                    tim = " hours";
                 }
 
-                table_found(result, ela, found);
+                table_found(result, ela, found , tim);
             }
         }
     }
