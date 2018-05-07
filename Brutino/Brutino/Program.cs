@@ -19,8 +19,8 @@ namespace Brutino
         public static int found = 0;
         public static string[] result = new string[1000];
         public static DateTime today = DateTime.Now;
-        public static string file = ($@"./brutino_logs/resume{today:dd-MM-yy}at{today:HH_mm_ss_mstt}.log");
-        public static string output = ($@"./results/Results of {today:dd-MM-yy}at{today:HH_mm_ss_mstt}.txt");
+        public static string file = ($@".\brutino_logs\resume{today:dd-MM-yy}at{today:HH_mm_ss_mstt}.log");
+        public static string output = ($@".\results\Results of {today:dd-MM-yy}at{today:HH_mm_ss_mstt}.txt");
 
         public static string CalculateMD5Hash(string input)
         {
@@ -224,7 +224,7 @@ namespace Brutino
             string[] line = new string[size];
             string directory = Directory.GetCurrentDirectory();
             string usr = Path.GetFileNameWithoutExtension(username);
-            string save = directory + $@"/{usr}" + "_formatted" + ".txt";
+            string save = directory + $@"\{usr}" + "_formatted" + ".txt";
 
             for (int i = 0; i < size; i++)
             {
